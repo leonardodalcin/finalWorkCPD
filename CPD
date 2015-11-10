@@ -4,4 +4,4 @@ from pprint import pprint
 with open('magicCards.json') as data_file:
 	db = json.load(data_file)
 
-pprint(db, 'teste')
+pprint(db)
