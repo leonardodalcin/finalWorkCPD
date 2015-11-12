@@ -2,6 +2,7 @@
 import json
 import random
 import os
+import re
 from pprint import pprint
 
 #main
@@ -26,7 +27,6 @@ def main():
 
 #prints the menu and asks for a command
 def printMenu():
-	os.system('cls') #limpa a tela / clear screen
 	print( 'What are you looking for?' )
 	print( '[0]Example \n[1]Search by name \n[2]Search by id \n[3]Quit' )
 	print( '>', end = "" )
@@ -75,7 +75,15 @@ def createDb():
 	for name,card in jsondb.items():
 	       db.append( jsondb[ name ])
 	       db[ i ][ 'id' ] = i
-	       i +=1
+	       i = i + 1
+		   
+	createTextTrie()
+	
+def createTextTrie():
+	wordList = []
+	for i in range( 0, len( db )):
+		wordList = re.sub("[^\w]", " ",  db[ i ][ text ]).split()
+		print( wordList )
 	
 #searchs for a card by name and returns it
 def searchName( name ):  
@@ -88,7 +96,7 @@ def searchName( name ):
 #prints an example with random index
 def cardExample():
 	aCardIndex = random.randint( 0, len( db ))
-	pprint( db[ aCardIndex ])
+	return( db[ aCardIndex ])
 
 #initFunctions
 main();
