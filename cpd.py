@@ -2,6 +2,7 @@
 import json
 import random
 import os
+import trie.py #nao sei se é assim o jeito certo
 from pprint import pprint
 
 #main
