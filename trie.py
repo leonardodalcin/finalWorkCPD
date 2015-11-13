@@ -34,27 +34,32 @@ def get_bucket_val(b):
 
 ### ******************** INSERT_KEY ************************
 
-def insert_key(key, v, trie):
-#nao insere nomes vazios
-    if key == '':
+def insert_key(k, v, trie):
+    ## do not insert empty keys
+    if k == '':
         return None
-#nao insere se o nome ja esta na arvore
-    elif has_key(key, trie) and retrieve_val(key, trie) == v:
+    ## if trie has k or stores it with the same value v,
+    ## do not insert
+    elif has_key(k, trie) and retrieve_val(k, trie) == v:
         return None
     else:
         tr = trie
-#se nao, percorre a arvore para cada letra c do nome
-        for c in key:
+        ## for each character c in k, find a child
+        ## branch that starts with c
+        for c in k:
             branch = find_child_branch(tr, c)
-            if branch == None: #se nao tem nenhum caminho para a letra c, cria um novo
+            ## if there is no branch that starts with c,
+            ## create it and append it at the end of
+            ## the current level.
+            if branch == None:
                 new_branch = [c]
                 tr.append(new_branch)
                 tr = new_branch
             else:
-                tr = branch #se achou, repete o processo no proximo nodo
+                tr = branch
         ## tr is now bound to the branch, so insert
         ## a new bucket.
-        tr.append((key,[v]))
+        tr.append((k,[v]))
         return None
 
 ## a branch is either empty or it is a list whose first
@@ -74,7 +79,7 @@ def find_child_branch(trie, c):
 
 ### ************************ HAS_KEY *************************
        
-def has_key(key, trie):
+def has_key(k, trie):
     br = retrieve_branch(k, trie)
     if br == None:
         return False
@@ -84,12 +89,12 @@ def has_key(key, trie):
 ### ******************** RETRIEVE_VAL ************************
 
 ## find a branch in trie that is indexed under k.
-def retrieve_branch(key, trie):
-    if key == '':
+def retrieve_branch(k, trie):
+    if k == '':
         return None
     else:
         tr = trie
-        for c in key:
+        for c in k:
             br = find_child_branch(tr, c)
             if br == None:
                 return None
@@ -98,9 +103,9 @@ def retrieve_branch(key, trie):
         return tr
 
 ## find a branch and retrieve its bucket, second element.
-def retrieve_val(key, trie):
-    if not has_key(key, trie): return None
-    br = retrieve_branch(key, trie)
+def retrieve_val(k, trie):
+    if not has_key(k, trie): return None
+    br = retrieve_branch(k, trie)
     return get_bucket_val(br[1])
 
 ### *************** START_WITH_PREFIX ************************
