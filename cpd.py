@@ -2,7 +2,10 @@
 import json
 import random
 import os
-import trie.py #nao sei se é assim o jeito certo
+import string
+from trie import *
+#funcoes: insert_key(k, v, trie), has_key(k, trie),
+#retrieve_val(k, trie) e start_with_prefix(prefix, trie) 
 from pprint import pprint
 
 #main
@@ -17,13 +20,16 @@ def main():
 		print( "Binary successfully loaded" )
 		
 	except:
-		print( "Opss, binary not found" )            
+		print( " binary not found" )            
 		createDb()
 	
 	print( 'Welcome to the great Magic the Gathering DB' )
 	
 	while endFlag == 0:
 		endFlag = printMenu()
+		if endFlag == 0:
+			print('press any key')
+			c = input() #espera input pra mostrar o menu de novo
 
 #prints the menu and asks for a command
 def printMenu():
@@ -39,24 +45,29 @@ def printMenu():
 		pprint( card ) 
 		return 0
 		
-#search by name	------- Needs implementation
+#search by name ------- Needs implementation
 	elif c == 1:
-		print( 'And what is the name of the beauty?' )
+		print( 'And what is the name of the card?' )
 		name = input();
-		card = searchName( name ); 
-		pprint( card )
+		name = normalizeText(name)
+		if has_key(name,trie) == True: #ve se a carta ta no database
+			card = searchName( name ); 
+			pprint( card )
+		else:
+			print('Card not in the database')
 		return 0
 		
-#search by id -------- Needs a B-tree
+#search by id
 	elif c == 2:
 		print( 'Please, insert card id' )
-		ID = input()
+		ID = int(input())
+		card = db[ID]
+		pprint(card)
 		return 0
 		
 #ends process --------- Working
 	elif c == 3:
-		return 1
-		
+		return 1 
 	else:
 		print( 'Please insert useful information' )
 	
@@ -65,7 +76,8 @@ def createDb():
 	global db
 	db = []
 	
-	with open( "magicCards.json" ) as data:
+	
+	with open( 'AllCards.json' ) as data:
 		jsondb = json.load( data );
 		
 	if jsondb:
@@ -74,22 +86,48 @@ def createDb():
 #appends cards to db and creates its id
 	i = 0
 	for name,card in jsondb.items():
-	       db.append( jsondb[ name ])
-	       db[ i ][ 'id' ] = i
+	       db.append(jsondb[name])
+	       db[i]['id'] = i
 	       i +=1
+
+#creates a TRIE tree with the card names
+	global trie
+	trie = [[]]
+	for i in range(0,len(db)):
+		cardName = normalizeText(db[i]['name'])
+		insert_key(cardName,i,trie)
+	if trie:
+		print('trie criada')
+		
 	
 #searchs for a card by name and returns it
-def searchName( name ):  
-	for i in range( 0, len( db )):
-		if( db[ i ][ 'name' ].lower() == name.lower()):
+def searchName(name):
+	cardIndex = retrieve_val(name, trie)
+	return db[cardIndex]
+
+#searchs for a card by name and returns it
+def searchNameLinear(name):  
+	for i in range(0,len(db)):
+		if(normalizeText(db[i]['name']) == name()):
 			return( db[ i ] );
+	return('Not found')
+
 	
-	return( 'Not found' )
+
 	
 #prints an example with random index
 def cardExample():
-	aCardIndex = random.randint( 0, len( db ))
-	pprint( db[ aCardIndex ])
+	aCardIndex = random.randint(0,len(db))
+	return db[aCardIndex]
+
+#normaliza a string
+def normalizeText(textoInicial):
+	texto = textoInicial.strip()
+	for pc in string.punctuation:
+		texto = texto.replace(pc, '') #tira a pontuaçao do texto
+	texto = texto.lower() #passa pra lowercase
+	return texto
+
 
 #initFunctions
 main();
