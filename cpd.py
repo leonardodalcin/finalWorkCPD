@@ -35,7 +35,8 @@ def main():
 def printMenu():
 	os.system('cls') #limpa a tela / clear screen
 	print( 'What are you looking for?' )
-	print( '[0]Example \n[1]Search by name \n[2]Search by id \n[3]Quit' )
+	print( '[0]Example \n[1]Search by name \n[2]Search by id \n\
+[3]Search by prefix\n[4]Quit' )
 	print( '>', end = "" )
 	c = int(input());
 	
@@ -64,12 +65,24 @@ def printMenu():
 		card = db[ID]
 		pprint(card)
 		return 0
-		
-#ends process --------- Working
+
+#search by prefix
 	elif c == 3:
+		print( 'And what is the prefix you look for?' )
+		prefix = input();
+		prefix = normalizeText(prefix)
+		namelist = start_with_prefix(prefix, trie)
+		for name in namelist:
+			card = searchName(name)
+			pprint (card)
+		return 0
+	
+#ends process --------- Working
+	elif c == 4:
 		return 1 
 	else:
 		print( 'Please insert useful information' )
+		
 	
 #creates db
 def createDb():
