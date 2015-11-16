@@ -1,4 +1,5 @@
 #imports
+import pickle
 import json
 import random
 import os
@@ -10,15 +11,18 @@ from pprint import pprint
 
 #main
 def main():
+	global db
+	db = []
 	endFlag = 0
 	print( "Start" )
 	
 #tests if db exists
-	try: 
-		with open( 'magicCards.bin', 'rb' ) as bindata:
-			bin = bindata.read();
-		print( "Binary successfully loaded" )
-		
+	try:
+		with open( 'cartas.bin', "rb" ) as f:
+			db = pickle.load(f)
+			print( "Binary successfully loaded")
+			print(type(db))
+			print(db[0])	
 	except:
 		print( " binary not found" )            
 		createDb()
@@ -76,7 +80,10 @@ def printMenu():
 			card = searchName(name)
 			pprint (card)
 		return 0
-	
+		
+	elif c == 5:
+		searchText( 'sword' )
+		return 0
 #ends process --------- Working
 	elif c == 4:
 		return 1 
@@ -86,10 +93,6 @@ def printMenu():
 	
 #creates db
 def createDb():
-	global db
-	db = []
-	
-	
 	with open( 'AllCards.json' ) as data:
 		jsondb = json.load( data );
 		
@@ -102,7 +105,10 @@ def createDb():
 	       db.append(jsondb[name])
 	       db[i]['id'] = i
 	       i +=1
-
+#creates binary file
+	with open('cartas.bin','wb') as f:
+	    pickle.dump( db, f )
+		
 #creates a TRIE tree with the card names
 	global trie
 	trie = [[]]
@@ -125,7 +131,12 @@ def searchNameLinear(name):
 			return( db[ i ] );
 	return('Not found')
 
-	
+def searchText( word ):
+	global textTrie 
+	texTrie = [[]]
+	insert_key( word, [0,1,2] , textTrie)
+	array = (retrieve_val( word, textTrie))
+	print(array)
 
 	
 #prints an example with random index
