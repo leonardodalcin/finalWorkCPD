@@ -1,131 +1,137 @@
-### *********************************************************
-### Module: trie.py
-### Description: A list and tuple based Python implementation
-### of the Trie data structure that supports the following
-### methods:
-### 1. insert_key(k, v, trie) - insert a non-empty string key k
-###    into trie and associate k with value v
-### 2. has_key(k, trie) - True if trie has key k
-### 3. retrieve_val(k, trie) - retrieve value indexed under key
-###    k in trie
-### 4. start_with_prefix(prefix, trie) - return the list of
-###    all keys in trie that start with prefix.
-###
-### Bugs, comments to vladimir dot kulyukin at gmail dot com
-### *********************************************************
+class Trie:
 
-### ***************** HELPER FUNCTIONS **********************
+    def __init__(self):
+        self.path = {}
+        self.value = None
+        self.value_valid = False
 
-def is_trie_bucket(x):
-    return isinstance(x, tuple) and \
-           len(x) == 2 and \
-           isinstance(x[0], str) and \
-           isinstance(x[1], list) and \
-           len(x[1]) == 1
-
-def is_trie_branch(x):
-    return isinstance(x, list)
-
-def get_bucket_key(b):
-    return b[0]
-
-def get_bucket_val(b):
-    return b[1][0]
-
-### ******************** INSERT_KEY ************************
-
-def insert_key(k, v, trie):
-    ## do not insert empty keys
-    if k == '':
-        return None
-    ## if trie has k or stores it with the same value v,
-    ## do not insert
-    elif has_key(k, trie) and retrieve_val(k, trie) == v:
-        return None
-    else:
-        tr = trie
-        ## for each character c in k, find a child
-        ## branch that starts with c
-        for c in k:
-            branch = find_child_branch(tr, c)
-            ## if there is no branch that starts with c,
-            ## create it and append it at the end of
-            ## the current level.
-            if branch == None:
-                new_branch = [c]
-                tr.append(new_branch)
-                tr = new_branch
-            else:
-                tr = branch
-        ## tr is now bound to the branch, so insert
-        ## a new bucket.
-        tr.append((k,[v]))
-        return None
-
-## a branch is either empty or it is a list whose first
-## element is a character and the rest are buckets or
-## sub-branches.
-def get_child_branches(trie):
-    if trie == []:
-        return []
-    else:
-        return trie[1:]
-
-def find_child_branch(trie, c):
-    for branch in get_child_branches(trie):
-       if branch[0] == c:
-           return branch
-    return None
-
-### ************************ HAS_KEY *************************
-       
-def has_key(k, trie):
-    br = retrieve_branch(k, trie)
-    if br == None:
-        return False
-    else:
-        return is_trie_bucket(get_child_branches(br)[0])
-
-### ******************** RETRIEVE_VAL ************************
-
-## find a branch in trie that is indexed under k.
-def retrieve_branch(k, trie):
-    if k == '':
-        return None
-    else:
-        tr = trie
-        for c in k:
-            br = find_child_branch(tr, c)
-            if br == None:
-                return None
-            else:
-                tr = br
-        return tr
-
-## find a branch and retrieve its bucket, second element.
-def retrieve_val(k, trie):
-    if not has_key(k, trie): return None
-    br = retrieve_branch(k, trie)
-    return get_bucket_val(br[1])
-
-### *************** START_WITH_PREFIX ************************
-
-def start_with_prefix(prefix, trie):
-    ## 1. find the branch indexed by prefix
-    br = retrieve_branch(prefix, trie)
-    if br == None: return []
-
-    key_list = []
-    q = get_child_branches(br)
-    ## 2. go through the sub-branches of the
-    ## branch indexed by the prefix and
-    ## collect the bucket strings into key_list
-    while not q == []:
-        curr_br = q.pop(0)
-        if is_trie_bucket(curr_br):
-            key_list.append(get_bucket_key(curr_br))
-        elif is_trie_branch(curr_br):
-            q.extend(get_child_branches(curr_br))
+    def __setitem__(self, key, value):
+        head = key[0]
+        if head in self.path:
+            node = self.path[head]
         else:
-            return 'ERROR: bad branch'
-    return key_list
+            node = Trie()
+            self.path[head] = node
+
+        if len(key) > 1:
+            remains = key[1:]
+            node.__setitem__(remains, value)
+        else:
+            node.value = value
+            node.value_valid = True
+
+    def __delitem__(self, key):
+        head = key[0]
+        if head in self.path:
+            node = self.path[head]
+            if len(key) > 1:
+                remains = key[1:]
+                node.__delitem__(remains)
+            else:
+                node.value_valid = False
+                node.value = None
+            if len(node) == 0:
+                del self.path[head]
+
+    def __getitem__(self, key):
+        head = key[0]
+        if head in self.path:
+            node = self.path[head]
+        else:
+            raise KeyError(key)
+        if len(key) > 1:
+            remains = key[1:]
+            try:
+                return node.__getitem__(remains)
+            except KeyError:
+                raise KeyError(key)
+        elif node.value_valid:
+            return node.value
+        else:
+            raise KeyError(key)
+
+    def __contains__(self, key):
+        try:
+            self.__getitem__(key)
+        except KeyError:
+            return False
+        return True
+
+    def __len__(self):
+        n = 1 if self.value_valid else 0
+        for k in self.path.keys():
+            n = n + len(self.path[k])
+        return n
+
+    def get(self, key, default=None):
+        try:
+            return self.__getitem__(key)
+        except KeyError:
+            return default
+
+    def nodeCount(self):
+        n = 0
+        for k in self.path.keys():
+            n = n + 1 + self.path[k].nodeCount()
+        return n
+
+    def keys(self, prefix=[]):
+        return self.__keys__(prefix)
+
+    def __keys__(self, prefix=[], seen=[]):
+        result = []
+        if self.value_valid:
+            isStr = True
+            val = ""
+            for k in seen:
+                if type(k) != str or len(k) > 2:
+                    isStr = False
+                    break
+                else:
+                    val += k
+            if isStr:
+                result.append(val)
+            else:
+                result.append(prefix)
+        if len(prefix) > 0:
+            head = prefix[0]
+            prefix = prefix[1:]
+            if head in self.path:
+                nextpaths = [head]
+            else:
+                nextpaths = []
+        else:
+            nextpaths = self.path.keys()                
+        for k in nextpaths:
+            nextseen = []
+            nextseen.extend(seen)
+            nextseen.append(k)
+            result.extend(self.path[k].__keys__(prefix, nextseen))
+        return result
+
+    def __iter__(self):
+        for k in self.keys():
+            yield k
+        raise StopIteration
+
+    def __add__(self, other):
+        result = Trie()
+        result += self
+        result += other
+        return result
+
+    def __sub__(self, other):
+        result = Trie()
+        result += self
+        result -= other
+        return result
+
+    def __iadd__(self, other):
+        for k in other:
+            self[k] = other[k]
+        return self
+
+    def __isub__(self, other):
+        for k in other:
+            del self[k]
+        return self
