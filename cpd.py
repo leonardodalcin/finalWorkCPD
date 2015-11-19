@@ -7,7 +7,7 @@ import string
 from trie import Trie
 from pprint import pprint
 import re
-#cartas[]-nameTrie-textTrie-textList
+#cards[]-nameTrie-textTrie-textList
 #main
 def main():
         global db
@@ -40,9 +40,8 @@ def main():
 
 #prints the menu and asks for a command
 def printMenu():
-        os.system('cls') #limpa a tela / clear screen
         print( 'What are you looking for?' )
-        print( '[0]Example \n[1]Search by name \n[2]Search by id \n\[3]Text Search\n[4]Quit' )
+        print( '[0]Example \n[1]Search by name \n[2]Search by id \n[3]Text Search\n[4]Name prefix search\n[5]Text prefix search\n[6]Quit' )
         print( '>', end = "" )
         c = int(input());
         
@@ -52,7 +51,7 @@ def printMenu():
                 printCard( card ) 
                 return 0
                 
-#search by name ------- Needs implementation
+#search by name ------- Working
         elif c == 1:
                 print( 'And what is the name of the card?' )
                 name = input();
@@ -64,7 +63,7 @@ def printMenu():
                         print('Card not in the database')
                 return 0
                 
-#search by id
+#search by id ------- Working
         elif c == 2:
                 print( 'Please, insert card id' )
                 ID = int(input())
@@ -72,16 +71,36 @@ def printMenu():
                 pprint(card)
                 return 0
 
-#search by prefix
+#search word in texts ------- Working
         elif c == 3:
                 word = input();
                 word = normalizeText( word )
-                array = searchText( word )
-                for i in range( 0, len(array)):
-                        printCard(db[array[i]])
+                idsArray = searchText( word )
+                for i in range( 0, len(idsArray)):
+                        printCard(db[idsArray[i]])
+                return 0
+        
+#serach by name prefix ------ Working
+        elif c == 4:
+                prefix = input();
+                prefix = normalizeText( prefix )
+                idsArray = searchNamePrefix( prefix )
+                if idsArray:
+                        for i in range( 0, len( idsArray )):
+                                printCard( db[ idsArray[ i ]] )
+                return 0
+        
+#serach by word prefix in text ------- Working
+        elif c == 5:
+                prefix = input();
+                prefix = normalizeText( prefix )
+                idsArray = searchTextPrefix( prefix )
+                if idsArray:
+                        for i in range( 0, len( idsArray )):
+                                printCard( db[ idsArray[ i ]] )
                 return 0
 #ends process --------- Working
-        elif c == 4:
+        elif c == 6:
                 return 1 
         else:
                 print( 'Please insert useful information' )
@@ -106,6 +125,8 @@ def createDb():
         textTrie = Trie()
         invertedListIndex = 0
         textList = []
+
+        print('Generating Text Trie (this might take a while)')
         for i in range( 0, len( db )):
                 tempWordList = []
                 if( 'text' in db[ i ] ):
@@ -125,29 +146,66 @@ def createDb():
                                     obj['cards'].append( i )
                                     textList.append( obj )
                                     invertedListIndex += 1
-        
+        print('Text Trie successfully created')
 #creates a TRIE tree with the card names
+        print('Generating Name Trie')
         nameTrie = Trie()
         for i in range(0, len(db)):
                 cardName = normalizeText(db[i]['name'])
                 if cardName:
                        nameTrie.__setitem__( cardName, i )
-
+        print('Name Trie successfully created')
+        print('Appending structures to db')
 #appending our structures to db
         db.append(nameTrie)
         db.append(textTrie)
         db.append(textList)
 
 #creates binary file
+        print('Dumping binary file')
         with open('AllCards.bin','wb') as f:
             pickle.dump( db, f )
+        print('Binary file successfully created')
 
 #searchs for a text and returns indexes array
 def searchText( word ):     
         index = textTrie.__getitem__( word )
         array = textList[ index ]
         return( array['cards'] )
-                     
+
+#searchs text prefix
+def searchTextPrefix( prefix ):
+        indexes = []
+        idsArray = []
+        wordsArray = textTrie.__keys__( prefix )
+        if len( wordsArray ) != 0:
+                if len( wordsArray ) == 1:
+                        return 0
+                del wordsArray[0]
+                for i in range(0, len( wordsArray )):
+                        indexes.append( textTrie.__getitem__( wordsArray[ i ] ))
+                for i in range(0, len( indexes )):
+                        for j in range(0, len( textList[ indexes[ i ]][ 'cards' ] )):
+                                idsArray.append( textList[ indexes[ i ]][ 'cards' ][ j ] )
+                return idsArray
+        else:
+                return 0
+        
+#searchs name prefix
+def searchNamePrefix( prefix ):
+        indexes = []
+        idsArray = []
+        wordsArray = nameTrie.__keys__( prefix )
+        if len( wordsArray ) != 0:
+                if len( wordsArray ) == 1:
+                        return 0
+                del wordsArray[0]
+                for i in range(0, len( wordsArray )):
+                        indexes.append( nameTrie.__getitem__( wordsArray[ i ] ))
+                return indexes
+        else:
+                return 0
+        
         
 #searchs for a card by name and returns it
 def searchName(name):
