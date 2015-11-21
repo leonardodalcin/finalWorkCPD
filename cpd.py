@@ -130,7 +130,10 @@ def printMenu():
                 print( 'Example:' )
                 card = cardExample()
                 print( 'Name: {}'.format( card['name'] ) )
-                print( 'Mana Cost: {}'.format( card['manaCost'] ) )
+                if 'manaCost' in card:
+                        print( 'Mana Cost: {}'.format( card['manaCost'] ) )
+                else:
+                        print( 'This card doesnt need mana' )
                 print( 'And what is the mana cost of the card?' )
                 manacost = input('>')
                 counter = 0
