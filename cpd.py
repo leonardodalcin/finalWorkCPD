@@ -164,6 +164,11 @@ def printMenu():
                 
 #Creates Database
 def createDb():
+
+        global textList
+        global textTrie
+        global nameTrie
+
         with open( 'AllCards.json' ) as data:
                 jsondb = json.load( data );
         if jsondb:
@@ -203,7 +208,7 @@ def createDb():
         print('Text Trie successfully created')
         
 #Calling the ColorIndexing()
-        ColorIndexing()
+        colorIndexing()
         
 #Creates a TRIE tree with the card names
         print('Generating Name Trie')
@@ -228,7 +233,8 @@ def createDb():
         print('Binary file successfully created')
         
 #Creates a color inverted index
-def ColorIndexing():
+def colorIndexing():
+        global dbcolor
         dbcolor['black'] = []
         dbcolor['blue'] = []
         dbcolor['white'] = []
