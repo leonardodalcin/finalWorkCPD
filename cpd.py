@@ -134,12 +134,14 @@ def printMenu():
                 print( 'And what is the mana cost of the card?' )
                 manacost = input('>')
                 counter = 0
+                flag = 0
                 for i in range( 0, len(db)):
                         if(counter < 20):
                                 if ('manaCost' in db[ i ]) == True:
                                         if db[ i ]['manaCost'] == manacost:
                                                 print(db[ i ]['name'] + ' ID:{}'.format(db[ i ]['id']))
                                                 counter += 1
+                                                flag = 1
                         else:
                                 print( 'Do you wanna see more? Yes or No?' )
                                 a = input('>')
@@ -147,7 +149,8 @@ def printMenu():
                                         counter = 0
                                 if a.lower() == 'no':
                                         break  
-                        
+                if(flag == 0):
+                        print( 'Dont exist one card with this mana cost, sorry.' )
                 return 0
                                 
 #Ends process 
