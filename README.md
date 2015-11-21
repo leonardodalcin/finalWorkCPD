@@ -1,2 +1,3 @@
 # finalWorkCPD
-download DB AllCards.json and rename it to magicCards.json -> http://mtgjson.com/
+json database is from -----> http://mtgjson.com/
+trie implementation from ------> https://github.com/bdimmick/python-trie
