@@ -161,6 +161,7 @@ def printMenu():
                 return 1 
         else:
                 print( 'Please insert useful information' )
+                return 0
                 
 #Creates Database
 def createDb():
